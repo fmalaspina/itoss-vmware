@@ -26,16 +26,14 @@ func main() {
 			return err
 		}
 		hostFound := false
-		printedTitles := false
+
+		fmt.Fprint(os.Stdout, "host;uptimeSec;overallStatus;connectionState;inMaintenanceMode;powerState;standbyMode;bootTime;proxyStatus\n")
 		for _, hs := range hss {
-			if *hostFlag != "" && hs.Summary.Config.Name != *hostFlag {
+			if *entityNameFlag != "all" && hs.Summary.Config.Name != *entityNameFlag {
 				continue
 			}
-			if !printedTitles {
-				fmt.Fprint(os.Stdout, "host;uptimeSec;overallStatus;connectionState;inMaintenanceMode;powerState;standbyMode;bootTime\n")
-				printedTitles = true
-			}
-			fmt.Fprintf(os.Stdout, "%s;%d;%s;%s;%v;%s;%s;%s\n",
+
+			fmt.Fprintf(os.Stdout, "%s;%d;%s;%s;%v;%s;%s;%s;%s\n",
 				hs.Summary.Config.Name,
 				hs.Summary.QuickStats.Uptime,
 				hs.Summary.OverallStatus,
@@ -43,13 +41,15 @@ func main() {
 				hs.Summary.Runtime.InMaintenanceMode,
 				hs.Summary.Runtime.PowerState,
 				hs.Summary.Runtime.StandbyMode,
-				hs.Summary.Runtime.BootTime.Format("2006-01-02 15:04:05"))
+				hs.Summary.Runtime.BootTime.Format("2006-01-02 15:04:05"),
+				"OK")
 			//
 			hostFound = true
 		}
 		if !hostFound {
-			fmt.Fprint(os.Stdout, -5)
-			fmt.Fprintf(os.Stderr, "\nHost %s not found\n", *hostFlag)
+			fmt.Fprintf(os.Stdout, "%s;%d;%s;%s;%v;%s;%s;%s;%s\n",
+				*entityNameFlag, 0, "NA", "NA", false, "NA", "NA", "NA", "HOST_NOT_FOUND")
+			fmt.Fprintf(os.Stderr, "\nHost %s not found\n", *entityNameFlag)
 			os.Exit(0)
 		}
 		return nil
